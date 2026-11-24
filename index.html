@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0E4B3B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="عُدّة">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>عُدّة Oddah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: calm, neighbourly, plain words; works for a grandmother and a teenager alike
+   IDEA: the shared tool locker itself — numbered doors, a key code, a tag on each tool
+   PICTURE: the app running inside a phone, beside a list of its screens and who each one serves
+   COLOUR and TYPE: NHC/Oddah deep green field, mint surfaces, one warm coral accent; IBM Plex Sans Arabic
+   LAYOUT: desktop = screen index + phone; phone = the app full screen, bottom tab bar */
+:root{color-scheme:light dark;
+--bg:light-dark(#EEF6F2,#0B1512);--paper:light-dark(#FFFFFF,#13221D);--mint:light-dark(#D6F1E4,#1B3A30);
+--green:light-dark(#0E4B3B,#7FD8B4);--deep:#0E4B3B;--ink:light-dark(#10201A,#E8F3EE);--soft:light-dark(#53675F,#A4B9B0);
+--line:light-dark(#D3E3DB,#284239);--coral:light-dark(#D9553B,#FF8A70);--warn:light-dark(#FFF1D6,#3A2E12);--fs:17px}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+:root.big{--fs:20px}:root.huge{--fs:23px}
+:root.hc{--ink:light-dark(#000,#fff);--soft:light-dark(#1d1d1d,#e6e6e6);--line:light-dark(#000,#fff);--green:light-dark(#003326,#A6FFD9)}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 var(--fs)/1.6 "IBM Plex Sans Arabic",system-ui,sans-serif;overflow-x:clip}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--coral);outline-offset:2px}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:40px;max-width:1180px;margin:auto;padding:36px max(4vw,16px);align-items:start}
+.index h1{font-size:44px;line-height:1.05;margin:0 0 6px;color:var(--green)}
+.index>p{color:var(--soft);margin:0 0 22px;max-width:52ch}
+.scr{display:grid;gap:8px}
+.scr button{display:grid;grid-template-columns:34px minmax(0,1fr);gap:12px;text-align:start;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-height:44px}
+.scr button[aria-current=true]{border-color:var(--green);box-shadow:0 0 0 2px var(--green) inset}
+.scr b{display:block;font-weight:600}.scr small{color:var(--soft);font-size:14px;line-height:1.45;display:block}
+.scr .n{width:34px;height:34px;border-radius:10px;background:var(--mint);color:var(--green);display:grid;place-items:center;font-weight:700}
+.groups{margin-top:22px;padding:16px;border-radius:16px;background:var(--mint)}
+.groups h2{font-size:17px;margin:0 0 8px}.groups p{margin:0;font-size:14px;color:var(--soft)}
+.phone{width:390px;height:820px;border-radius:46px;background:#0b1612;padding:12px;box-shadow:0 30px 60px -20px #0e4b3b80;position:sticky;top:24px}
+#app{height:100%;border-radius:36px;overflow:hidden;background:var(--bg);display:flex;flex-direction:column;position:relative}
+@media(max-width:860px){.stage{display:block;padding:0}.index{display:none}.phone{width:100%;height:100dvh;border-radius:0;padding:0;position:static;box-shadow:none;background:none}#app{border-radius:0}}
+.top{background:var(--deep);color:#fff;padding:18px 18px 16px;padding-top:max(18px,env(safe-area-inset-top))}
+.top .row{display:flex;align-items:center;gap:10px;justify-content:space-between}
+.top h2{margin:0;font-size:1.35em;line-height:1.2}
+.top p{margin:4px 0 0;opacity:.85;font-size:.85em}
+.back{background:#ffffff1f;border:0;border-radius:12px;min-width:44px;min-height:44px;color:#fff;font-size:1.1em}
+.lang{background:#ffffff1f;border:0;border-radius:999px;padding:6px 14px;min-height:40px;color:#fff;font-size:.8em}
+main{flex:1;overflow-y:auto;padding:16px 16px 24px}
+nav.tabs{display:grid;grid-template-columns:repeat(4,1fr);background:var(--paper);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs button{background:none;border:0;padding:8px 2px 10px;min-height:58px;font-size:.72em;color:var(--soft);display:grid;justify-items:center;gap:2px}
+nav.tabs button[aria-current=true]{color:var(--green);font-weight:700}
+nav.tabs svg{width:24px;height:24px}
+h3{font-size:1.05em;margin:20px 0 10px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:14px}
+.search{display:flex;gap:8px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:0 12px}
+.search input{border:0;background:none;padding:12px 0;width:100%;font-size:16px;outline:none}
+.kits{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kit{background:var(--mint);border:0;border-radius:18px;padding:14px;text-align:start;min-height:104px;display:grid;align-content:space-between;gap:6px}
+.kit b{font-size:.95em;line-height:1.3}.kit small{color:var(--soft);font-size:.72em}
+.kit svg,.tool svg{width:34px;height:34px;color:var(--green)}
+.tools{display:grid;gap:10px}
+.tool{display:grid;grid-template-columns:56px minmax(0,1fr) auto;gap:12px;align-items:center;background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:10px 12px;text-align:start;width:100%;min-height:72px}
+.tool .ic{width:56px;height:56px;border-radius:14px;background:var(--mint);display:grid;place-items:center}
+.tool b{display:block;line-height:1.3}.tool small{color:var(--soft);font-size:.75em}
+.price{font-weight:700;white-space:nowrap;color:var(--green);font-size:.9em}
+.tag{display:inline-block;font-size:.7em;border-radius:999px;padding:1px 9px;font-weight:600;white-space:nowrap}
+.ok{background:var(--mint);color:var(--green)}.no{background:var(--warn);color:light-dark(#7a4b00,#ffcf75)}
+.banner{background:var(--deep);color:#fff;border-radius:18px;padding:14px 16px;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center}
+.banner p{margin:0;font-size:.85em;opacity:.9}.banner b{display:block}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:54px;border:0;border-radius:16px;background:var(--deep);color:#fff;font-weight:700;font-size:1em;padding:10px 16px}
+.btn.alt{background:var(--paper);color:var(--green);border:2px solid var(--green)}
+.btn.small{width:auto;min-height:44px;font-size:.85em;padding:8px 14px}
+.btn:disabled{opacity:.45}
+.hero{display:grid;place-items:center;background:var(--mint);border-radius:22px;height:170px}
+.hero svg{width:110px;height:110px;color:var(--green)}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:12px}
+.facts div{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:10px;text-align:center}
+.facts b{display:block;font-size:1.05em;white-space:nowrap}.facts small{color:var(--soft);font-size:.7em}
+ol.steps{margin:0;padding-inline-start:22px}ol.steps li{margin-bottom:6px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:8px 14px;min-height:46px;font-size:.88em}
+.chip[aria-pressed=true]{border-color:var(--green);background:var(--mint);color:var(--green);font-weight:700}
+.sum{display:grid;gap:6px}.sum div{display:flex;justify-content:space-between;gap:10px}.sum .tot{border-top:1px dashed var(--line);padding-top:8px;font-weight:700}
+.note{background:var(--warn);border-radius:14px;padding:12px 14px;font-size:.85em}
+label.check{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;padding:10px 0;font-size:.9em}
+label.check input{width:24px;height:24px;margin:2px 0 0;accent-color:var(--deep)}
+.field{display:grid;gap:6px;margin-bottom:12px}.field input,.field select{border:1.5px solid var(--line);background:var(--paper);border-radius:12px;padding:12px;font-size:16px;min-height:48px}
+.qr{width:190px;height:190px;margin:auto;background:#fff;padding:12px;border-radius:18px}
+.pin{display:flex;justify-content:center;gap:8px;direction:ltr;margin:14px 0}
+.pin span{width:52px;height:62px;border-radius:14px;background:var(--paper);border:2px solid var(--green);display:grid;place-items:center;font-size:1.6em;font-weight:700}
+.center{text-align:center}
+.locker{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin:6px 0 4px}
+.pill{background:var(--mint);color:var(--green);border-radius:999px;padding:4px 14px;font-weight:700;font-size:.9em;white-space:nowrap}
+.photo{border:2px dashed var(--line);border-radius:16px;min-height:120px;display:grid;place-items:center;text-align:center;padding:12px;color:var(--soft);font-size:.85em;cursor:pointer;position:relative;overflow:hidden}
+.photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+.photo input{position:absolute;opacity:0;inset:0;cursor:pointer}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:12px}
+.stat b{display:block;font-size:1.5em;color:var(--green);line-height:1.2;white-space:nowrap}.stat small{color:var(--soft);font-size:.75em}
+.meter{height:10px;border-radius:99px;background:var(--mint);overflow:hidden;margin-top:8px}.meter i{display:block;height:100%;background:var(--coral);border-radius:99px}
+.row2{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--line)}
+.row2:last-child{border:0}
+.switch{width:52px;height:30px;border-radius:99px;border:0;background:var(--line);position:relative;flex:none}
+.switch::after{content:"";position:absolute;top:3px;inset-inline-start:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:.2s}
+.switch[aria-checked=true]{background:var(--deep)}.switch[aria-checked=true]::after{inset-inline-start:25px}
+details{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px}
+summary{font-weight:600;cursor:pointer;min-height:28px}details p{margin:8px 0 0;color:var(--soft);font-size:.9em}
+.toast{position:absolute;bottom:80px;inset-inline:16px;background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:14px;font-size:.88em;opacity:0;transform:translateY(10px);transition:.25s;pointer-events:none}
+.toast.on{opacity:1;transform:none}
+.welcome{flex:1;overflow-y:auto;background:var(--deep);color:#fff;padding:40px 22px 24px;display:grid;align-content:start;gap:18px}
+.welcome h1{font-size:52px;margin:0;line-height:1}.welcome .chip{background:#ffffff14;border-color:#ffffff40;color:#fff}
+.welcome .chip[aria-pressed=true]{background:#fff;color:var(--deep)}
+.welcome .btn{background:#fff;color:var(--deep)}
+.sample{font-size:.7em;color:var(--soft);text-align:center;margin-top:16px}
+.empty{color:var(--soft);text-align:center;padding:24px 10px}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+:root.calm *{transition:none!important}
+</style>
+</head>
+<body>
+<div class="stage">
+  <section class="index" aria-label="فهرس الواجهات">
+    <h1>عُدّة: واجهات التطبيق</h1>
+    <p>نموذج أولي يعمل كتطبيق ويب (PWA). اضغط أي واجهة لفتحها داخل الجوال، وتحت كل واجهة الفئات اللي صُممت لها.</p>
+    <div class="scr" id="scr"></div>
+    <div class="groups"><h2>فئات المستخدمين اللي أخذناها بالاعتبار</h2>
+      <p>كبار السن · ضعاف البصر وذوو الإعاقة الحركية · قليلو الخبرة الرقمية · الأسر المشغولة اللي توكّل غيرها بالاستلام · النساء اللي يفضّلن استلام بدون تعامل مباشر · غير الناطقين بالعربية · المبتدئين في أعمال البيت · الأسر محدودة الدخل</p></div>
+  </section>
+  <div class="phone"><div id="app" aria-live="polite"></div></div>
+</div>
+<script>
+{
+const ICON={
+drill:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M8 12h22l4 4v4l-4 4H18"/><path d="M34 18h8"/><path d="M18 24l-3 16h9l1-16"/><path d="M12 12v-2"/></svg>',
+ladder:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M16 6 10 42M32 6l6 36M15 14h18M13 23h21M12 32h24"/></svg>',
+washer:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="6" y="20" width="18" height="20" rx="4"/><path d="M24 26h8l10-8M38 14l6-2M39 20l6 1M24 34h6"/><circle cx="12" cy="42" r="2"/><circle cx="20" cy="42" r="2"/></svg>',
+level:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><rect x="4" y="17" width="40" height="14" rx="3"/><rect x="19" y="20" width="10" height="8" rx="4"/><circle cx="24" cy="24" r="1.5" fill="currentColor"/></svg>',
+glue:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M10 14h24a6 6 0 0 1 0 12H22l-4 14h-6l2-14h-4z"/><path d="M40 20h4"/></svg>',
+mower:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M30 6 22 26M8 26h28v8H8z"/><circle cx="13" cy="38" r="4"/><circle cx="31" cy="38" r="4"/></svg>',
+vac:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="8" y="22" width="20" height="18" rx="6"/><path d="M28 28c10 0 12-8 12-20M36 8h8"/><circle cx="18" cy="31" r="3"/></svg>',
+tile:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><rect x="6" y="28" width="36" height="10" rx="2"/><path d="M14 28 30 10l6 6-12 12"/></svg>',
+frame:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><rect x="10" y="16" width="28" height="24" rx="2"/><path d="M16 16 24 7l8 9M16 34l7-8 5 5 4-4 4 4"/></svg>',
+clean:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 40c6-2 8-10 8-16h16c0 6 2 14 8 16z"/><path d="M24 24V6M19 30v6M29 30v6M24 30v8"/></svg>',
+shelf:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M6 22h36M6 36h36M12 22v4M36 22v4M12 36v4M36 36v4"/><rect x="12" y="10" width="8" height="12"/><rect x="24" y="14" width="10" height="8"/></svg>',
+garden:'<svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M24 42V20M24 26c-8 0-12-6-12-12 8 0 12 6 12 12zM24 22c0-8 5-12 12-12 0 8-5 12-12 12z"/><path d="M12 42h24"/></svg>',
+home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 11 12 4l9 7v9H3z"/><path d="M10 20v-6h4v6"/></svg>',
+box:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18M12 10v10"/><circle cx="15" cy="15" r="1" fill="currentColor"/></svg>',
+help:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14"/><circle cx="12" cy="17.5" r=".6" fill="currentColor"/></svg>',
+user:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>',
+search:'<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>'};
+
+// sample catalogue: prices are illustrative, not decided
+const TOOLS=[
+{id:'drill',ic:'drill',ar:'دريل لاسلكي',en:'Cordless drill',day:15,dep:0,kg:1.4,lvl:1,n:2,free:2,
+ tipsAr:['ركّب البنطة المناسبة: الرمادية للخرسانة والفضية للحديد.','حدّد مكان التخريم وتأكد ما فيه أسلاك كهرباء.','امسك الدريل بيدينك وابدأ بسرعة خفيفة.'],
+ tipsEn:['Fit the right bit: grey for concrete, silver for metal.','Mark the spot and check there are no cables behind it.','Hold with both hands and start slowly.']},
+{id:'ladder',ic:'ladder',ar:'سلّم قابل للطي ٤ درجات',en:'Folding 4-step ladder',day:10,dep:0,kg:6,lvl:1,n:2,free:1,
+ tipsAr:['افتح السلم كاملاً وتأكد إن القفل نازل.','ضعه على أرض مستوية.','لا تقف على آخر درجة.'],
+ tipsEn:['Open fully and make sure the lock is down.','Place on level ground.','Never stand on the top step.']},
+{id:'washer',ic:'washer',ar:'جهاز تنظيف بضغط الماء',en:'Pressure washer',day:25,dep:100,kg:8,lvl:2,n:2,free:1,
+ tipsAr:['وصّل خرطوم الماء أولاً ثم الكهرباء.','لا توجّه الرشاش على الناس أو الأفياش.','ابدأ بالفوهة العريضة.'],
+ tipsEn:['Connect the water hose before the power.','Never aim at people or sockets.','Start with the wide nozzle.']},
+{id:'level',ic:'level',ar:'ميزان ماء',en:'Spirit level',day:5,dep:0,kg:.5,lvl:1,n:3,free:3,tipsAr:['ضع الميزان على السطح وانتظر الفقاعة تستقر في الوسط.'],tipsEn:['Lay it flat and wait for the bubble to settle in the middle.']},
+{id:'glue',ic:'glue',ar:'مسدس غراء حراري',en:'Hot glue gun',day:5,dep:0,kg:.4,lvl:1,n:2,free:2,tipsAr:['انتظر ٣ دقائق حتى يسخن.','الرأس حار جداً، أبعده عن الأطفال.'],tipsEn:['Wait 3 minutes to heat up.','The tip is very hot; keep away from children.']},
+{id:'vac',ic:'vac',ar:'مكنسة رطب وجاف',en:'Wet & dry vacuum',day:20,dep:50,kg:7,lvl:1,n:1,free:1,tipsAr:['فرّغ الخزان بعد كل استخدام.'],tipsEn:['Empty the tank after each use.']},
+{id:'mower',ic:'mower',ar:'قصاصة عشب كهربائية',en:'Electric lawn mower',day:25,dep:100,kg:11,lvl:2,n:1,free:0,tipsAr:['نظّف الحديقة من الحجارة قبل القص.','افصل الكهرباء قبل تنظيف الشفرة.'],tipsEn:['Clear stones before mowing.','Unplug before touching the blade.']},
+{id:'tile',ic:'tile',ar:'قطّاعة بلاط يدوية',en:'Manual tile cutter',day:15,dep:50,kg:5,lvl:3,n:1,free:1,tipsAr:['ارسم خط القص واضغط بثبات مرة وحدة.'],tipsEn:['Mark the line and score once with steady pressure.']}];
+
+const KITS=[
+{id:'hang',ic:'frame',ar:'تعليق لوحة أو ستارة',en:'Hang a frame or curtain',tools:['drill','level','ladder']},
+{id:'wash',ic:'clean',ar:'تنظيف الحوش والسيارة',en:'Wash the yard & car',tools:['washer','vac']},
+{id:'shelf',ic:'shelf',ar:'تركيب رف',en:'Put up a shelf',tools:['drill','level']},
+{id:'garden',ic:'garden',ar:'ترتيب الحديقة',en:'Tidy the garden',tools:['mower','ladder']}];
+
+const S={ar:{
+hi:'مساء الخير، أم خالد',sub:'خزانة خزام - المبنى ٣ · مفتوحة ٢٤ ساعة',search:'ابحث عن أداة… مثل دريل، سلم',task:'وش تبي تسوي اليوم؟',kitNote:'عُدّة كاملة مع شرح',
+all:'كل الأدوات',avail:'متوفر',none:'غير متوفر الآن',notify:'نبّهني لما يتوفر',perDay:'ر.س / يوم',sar:'ر.س',
+season:'قرّب العيد، وقت التنظيف؟',seasonP:'جهاز الضغط متاح للحجز المسبق',book:'احجز',reqTitle:'ما لقيت الأداة؟',reqP:'اطلبها وصوّت، والأكثر طلباً نضيفه للخزانة',reqBtn:'اطلب أداة',
+tHome:'الرئيسية',tMine:'حجوزاتي',tHelp:'مساعدة',tMe:'حسابي',
+weight:'الوزن',kg:'كغ',deposit:'تأمين مسترد',noDep:'بدون تأمين',levelL:'الصعوبة',lv:['سهل للمبتدئ','متوسط','يحتاج خبرة'],
+how:'كيف تستخدمها بأمان',video:'شاهد فيديو قصير (٩٠ ثانية)، بالعربي ومع ترجمة',where:'مكان الاستلام: خزانة خزام، المبنى ٣، بجانب المصلى. الخزانة على ارتفاع مناسب لمستخدمي الكراسي المتحركة.',
+heavy:'الأداة ثقيلة. نقدر نوصلها لباب البيت بـ١٠ ر.س إضافية.',
+bookT:'حجز الأداة',when:'متى تستلم؟',days:'كم يوم تحتاجها؟',d:['يوم','يومين','٣ أيام'],who:'مين بيستلم؟',me:'أنا',fam:'شخص من العائلة',famName:'اسم الشخص',famPh:'مثلاً: خالد',famNote:'يوصله رمز استلام خاص فيه برسالة نصية. ما يحتاج تطبيق.',
+deliv:'توصيل لباب البيت (+١٠ ر.س)',rent:'الإيجار',delivL:'التوصيل',dep2:'تأمين (يرجع لك)',total:'الإجمالي',
+termsT:'قبل ما تأكد، باختصار:',terms:['عندك مهلة ٢٤ ساعة بعد موعد الإرجاع بدون أي رسوم.','بعدها ١.٥ ضعف سعر اليوم عن كل يوم تأخير، وما تتجاوز قيمة الأداة.','ما يتوقف حسابك إلا إذا تأخرت أكثر من ٣ أيام.','الاستهلاك الطبيعي ما نحاسبك عليه. نصوّر الأداة عند الاستلام والإرجاع عشان حقك وحقنا.'],
+agree:'فهمت وأوافق',confirm:'تأكيد الحجز',pay:'الدفع عند الاستلام بمدى أو Apple Pay',
+today:'اليوم',tomorrow:'بكرة',after:'بعد بكرة',
+doneT:'تم الحجز',doneP:'افتح الخزانة بالرمز أو امسح الكود عند الشاشة',locker:'خزانة خزام · المبنى ٣',door:'الباب',due:'الإرجاع قبل',shareCode:'انسخ الرمز وأرسله لشخص يستلم عنك',copied:'تم نسخ الرمز',remind:'بنذكّرك قبل الموعد بيوم وقبل ساعتين',goMine:'روح لحجوزاتي',
+mineT:'حجوزاتي',active:'الحجوزات الحالية',past:'السابقة',ret:'إرجاع الأداة',ext:'تمديد يوم',left:'باقي',hours:'ساعة',noneYet:'ما عندك حجوزات حالياً. احجز أول أداة من الرئيسية.',returned:'تم الإرجاع',
+retT:'إرجاع الأداة',ret1:'١. صوّر الأداة',ret1p:'اضغط هنا وصوّر الأداة كاملة',ret2:'٢. تأكد من التالي',chk:['رجّعت كل القطع والملحقات','نظّفت الأداة من الغبار أو الماء','الأداة تشتغل طبيعي'],
+prob:'صار فيها عطل أو خلل؟',probP:'بلّغنا بصراحة، الأعطال العادية من الاستهلاك ما تنحسب عليك.',probBtn:'أبلّغ عن مشكلة',probDone:'وصلنا البلاغ. شكراً لصدقك.',
+ret3:'٣. ضعها في الباب',retBtn:'تم، سكّرت الباب',thanks:'شكراً! رجعت في وقتها',pts:'+١٠ نقاط',saveP:'وفّرت تقريباً',
+helpT:'المساعدة',call:'كلّمنا: 920000000 (من ٨ص إلى ١٠م)',wa:'أو واتساب على نفس الرقم',vids:'فيديوهات قصيرة',vlist:['كيف تحجز وتستلم من الخزانة','كيف ترجّع الأداة وتصوّرها','كيف توكّل أحد يستلم عنك'],faq:'أسئلة شائعة',
+q:[['وش يصير لو تأخرت؟','عندك ٢٤ ساعة مهلة، وبعدها رسوم بسيطة لها سقف. ولو عندك ظرف تواصل معنا ونتفاهم.'],['لو الأداة خربت معي؟','الاستهلاك الطبيعي ما تدفع عليه. التلف الكبير نقارنه بالصور ونتواصل معك قبل أي خصم.'],['أقدر أخلي السائق أو العاملة يستلمون؟','إيه، من صفحة الحجز اختر شخص من العائلة واكتب اسمه، ويوصله رمز خاص فيه.'],['ما أعرف أستخدم الأداة؟','كل أداة معها خطوات وفيديو، ولو تحتاج، نقدر نرتّب لك فني من المجتمع بسعر مخفض.']],
+meT:'حسابي',impact:'أثرك',saved:'وفّرت',notBought:'أدوات ما اشتريتها',points:'نقاطك',ptsP:'٣٠ نقطة وتصير مستعير موثوق: مدة أطول وأدوات أكثر',
+access:'سهولة الاستخدام',size:'حجم الخط',sizes:['عادي','كبير','كبير جداً'],hc:'تباين عالي',calm:'تقليل الحركة',langL:'اللغة',familyT:'أفراد مسموح لهم الاستلام',addFam:'إضافة شخص',notif:'تذكير قبل موعد الإرجاع',season2:'تنبيهات المواسم (العيد، الصيف)',
+reqT:'اطلب أداة',reqName:'وش الأداة؟',reqPh:'مثلاً: خلاط إسمنت',send:'أرسل الطلب',votes:'الأكثر طلباً من جيرانك',vote:'أبيها',voted:'صوّتت',reqDone:'وصل طلبك',
+welcome:'أدواتك وقت حاجتك',wP:'استعر أدوات البيت من خزانة في حيّك، بدل ما تشتريها وتخزّنها.',wLang:'اختر اللغة',wSize:'اختر حجم الخط المريح لك',start:'ابدأ',wNafath:'الدخول برقم الجوال (رمز تحقق)',
+sample:'نموذج أولي، والأسعار والبيانات للتوضيح فقط'},
+en:{
+hi:'Good evening, Um Khalid',sub:'Khuzam locker, Building 3 · open 24h',search:'Search tools… e.g. drill, ladder',task:'What are you doing today?',kitNote:'Full kit with guide',
+all:'All tools',avail:'Available',none:'Not available now',notify:'Notify me',perDay:'SAR / day',sar:'SAR',
+season:'Eid is coming. Time to clean?',seasonP:'Pre-book the pressure washer',book:'Book',reqTitle:"Can't find a tool?",reqP:'Request it and vote; top requests get added',reqBtn:'Request a tool',
+tHome:'Home',tMine:'My bookings',tHelp:'Help',tMe:'Account',
+weight:'Weight',kg:'kg',deposit:'Refundable deposit',noDep:'No deposit',levelL:'Difficulty',lv:['Beginner friendly','Medium','Needs experience'],
+how:'How to use it safely',video:'Watch a 90-second video (Arabic, with subtitles)',where:'Pickup: Khuzam locker, Building 3, next to the prayer room. Wheelchair-accessible height.',
+heavy:'This tool is heavy. We can deliver to your door for SAR 10 extra.',
+bookT:'Book the tool',when:'When will you pick it up?',days:'How many days?',d:['1 day','2 days','3 days'],who:'Who will pick it up?',me:'Me',fam:'A family member',famName:'Their name',famPh:'e.g. Khalid',famNote:'They get their own pickup code by SMS. No app needed.',
+deliv:'Door delivery (+SAR 10)',rent:'Rental',delivL:'Delivery',dep2:'Deposit (refunded)',total:'Total',
+termsT:'Before you confirm, in short:',terms:['You have a 24-hour grace period after the due time, free.','After that, 1.5× the daily price per late day, never more than the tool is worth.','Your account is only paused if you are more than 3 days late.','Normal wear is on us. Photos at pickup and return protect both sides.'],
+agree:'I understand and agree',confirm:'Confirm booking',pay:'Pay at pickup with mada or Apple Pay',
+today:'Today',tomorrow:'Tomorrow',after:'Day after',
+doneT:'Booked',doneP:'Open the locker with the code or scan at the screen',locker:'Khuzam locker · Building 3',door:'Door',due:'Return by',shareCode:'Copy the code for someone picking up for you',copied:'Code copied',remind:"We'll remind you a day and two hours before",goMine:'Go to my bookings',
+mineT:'My bookings',active:'Current',past:'Past',ret:'Return tool',ext:'Extend a day',left:'left',hours:'h',noneYet:'No bookings yet. Book your first tool from Home.',returned:'Returned',
+retT:'Return the tool',ret1:'1. Photograph the tool',ret1p:'Tap to take a photo of the whole tool',ret2:'2. Check these',chk:['All parts and accessories are back','Tool is clean of dust or water','Tool works normally'],
+prob:'Something broke or feels off?',probP:'Tell us honestly. Normal wear is never charged to you.',probBtn:'Report a problem',probDone:'Report received. Thanks for being honest.',
+ret3:'3. Put it in the door',retBtn:"Done, I've closed the door",thanks:'Thank you! Returned on time',pts:'+10 points',saveP:'You saved about',
+helpT:'Help',call:'Call us: 920000000 (8am–10pm)',wa:'Or WhatsApp on the same number',vids:'Short videos',vlist:['Booking and picking up from the locker','Returning and photographing a tool','Letting someone pick up for you'],faq:'FAQ',
+q:[['What if I am late?','You get 24 hours of grace, then a small capped fee. If something came up, just talk to us.'],['What if the tool breaks?','Normal wear is free. Major damage is checked against the photos and we call you before charging anything.'],['Can my driver or housekeeper pick up?','Yes. Choose a family member when booking and add their name; they get their own code.'],["I don't know how to use the tool",'Every tool has steps and a video. If needed we can arrange a local handyman at a discount.']],
+meT:'Account',impact:'Your impact',saved:'Saved',notBought:'Tools not bought',points:'Your points',ptsP:'30 points to become a Trusted borrower: longer loans, more tools',
+access:'Accessibility',size:'Text size',sizes:['Normal','Large','Extra large'],hc:'High contrast',calm:'Reduce motion',langL:'Language',familyT:'People allowed to pick up',addFam:'Add a person',notif:'Reminder before return time',season2:'Seasonal tips (Eid, summer)',
+reqT:'Request a tool',reqName:'Which tool?',reqPh:'e.g. Cement mixer',send:'Send request',votes:'Most requested by neighbours',vote:'I want it',voted:'Voted',reqDone:'Request sent',
+welcome:'Your tools, when you need them',wP:'Borrow household tools from a locker in your neighbourhood instead of buying and storing them.',wLang:'Choose language',wSize:'Pick a comfortable text size',start:'Start',wNafath:'Sign in with your mobile number (OTP)',
+sample:'Prototype. Prices and data are illustrative only'}};
+
+let st={view:'welcome',lang:'ar',size:0,hc:false,calm:false,tool:null,kit:null,q:'',day:0,dur:0,who:0,fam:'',deliv:false,agree:false,
+ bookings:[{id:'b0',tool:'ladder',door:'A07',pin:'5129',due:Date.now()+30*3600e3,done:false}],history:[{tool:'glue',save:115},{tool:'drill',save:425}],
+ points:20,photo:null,checks:[0,0,0],probSent:false,notif:true,season:true,family:['خالد','Maria'],
+ req:[{ar:'خلاط إسمنت',en:'Cement mixer',v:14},{ar:'منشار كهربائي',en:'Electric saw',v:11},{ar:'معدات تخييم',en:'Camping gear',v:9}],voted:{}};
+try{const s=JSON.parse(localStorage.getItem('oddah')||'null');if(s){Object.assign(st,s)}}catch(e){}
+const save=()=>{try{localStorage.setItem('oddah',JSON.stringify({lang:st.lang,size:st.size,hc:st.hc,calm:st.calm,seen:true}))}catch(e){}};
+if(st.seen)st.view='home';
+const T=k=>S[st.lang][k];
+const tool=id=>TOOLS.find(t=>t.id===id);
+const nm=t=>t[st.lang];
+const num=n=>st.lang==='ar'?n.toLocaleString('ar-SA'):n.toLocaleString('en');
+const app=document.getElementById('app');
+
+const SCREENS=[
+['welcome','الترحيب واختيار اللغة والخط','كبار السن وضعاف البصر يختارون الخط من أول شاشة، وغير الناطقين بالعربية يختارون الإنجليزي'],
+['home','الرئيسية: المهام والأدوات','قليلو الخبرة يبدؤون من المهمة ("تعليق لوحة") بدل اسم الأداة، وتنبيه موسمي يذكّر الجميع بالخدمة'],
+['tool','تفاصيل الأداة','المبتدئون: خطوات أمان وفيديو. ذوو الإعاقة الحركية: الوزن وخيار توصيل لباب البيت'],
+['book','الحجز','الأسر المشغولة توكّل شخص يستلم برمز خاص. محدودو الدخل يشوفون كل التكلفة قبل التأكيد. الشروط بكلمات بسيطة'],
+['done','رمز الاستلام','استلام ذاتي بدون تعامل مباشر، مع رمز أرقام كبيرة بديل للـQR'],
+['mine','حجوزاتي','وقت متبقي واضح، وتمديد بضغطة بدل التأخير والغرامة'],
+['return','الإرجاع بالصور','خطوات مرقّمة، وبلاغ عن العطل بدون لوم عشان الناس يصدقون'],
+['help','المساعدة','اتصال وواتساب لمن ما يرتاح للتطبيق، وفيديوهات قصيرة'],
+['me','حسابي وسهولة الاستخدام','حجم الخط، التباين العالي، اللغة، وأفراد الأسرة. والنقاط والأثر تشجّع على الإرجاع في الوقت'],
+['req','اطلب أداة','السكان يشاركون في اختيار الأدوات، وتطلع بيانات طلب حقيقية']];
+const scr=document.getElementById('scr');
+const drawIndex=()=>{scr.innerHTML=SCREENS.map((s,i)=>`<button data-go="${s[0]}" aria-current="${st.view===s[0]}"><span class="n">${i+1}</span><span><b>${s[1]}</b><small>${s[2]}</small></span></button>`).join('')};
+
+const top=(title,sub,back)=>`<header class="top"><div class="row">${back?`<button class="back" data-go="${back}" aria-label="رجوع">${st.lang==='ar'?'→':'←'}</button>`:''}<div style="flex:1"><h2>${title}</h2>${sub?`<p>${sub}</p>`:''}</div><button class="lang" data-act="lang">${st.lang==='ar'?'English':'عربي'}</button></div></header>`;
+const tabs=()=>{const a=[['home','home',T('tHome')],['mine','box',T('tMine')],['help','help',T('tHelp')],['me','user',T('tMe')]];const cur={tool:'home',book:'home',done:'mine',return:'mine',req:'home'}[st.view]||st.view;
+ return `<nav class="tabs">${a.map(x=>`<button data-go="${x[0]}" aria-current="${cur===x[0]}">${ICON[x[1]]}${x[2]}</button>`).join('')}</nav>`};
+const toolRow=t=>`<button class="tool" data-tool="${t.id}"><span class="ic">${ICON[t.ic]}</span><span><b>${nm(t)}</b><span class="tag ${t.free?'ok':'no'}">${t.free?T('avail')+' · '+num(t.free):T('none')}</span></span><span class="price">${num(t.day)} <small>${T('perDay')}</small></span></button>`;
+
+const V={
+welcome:()=>`<div class="welcome"><div><h1>عُدّة</h1><p style="margin:4px 0 0;opacity:.8">Oddah</p></div>
+ <div><b style="font-size:1.3em">${T('welcome')}</b><p style="opacity:.85;margin:6px 0 0">${T('wP')}</p></div>
+ <div><p style="margin:0 0 8px">${T('wLang')}</p><div class="chips"><button class="chip" data-set="lang:ar" aria-pressed="${st.lang==='ar'}">العربية</button><button class="chip" data-set="lang:en" aria-pressed="${st.lang==='en'}">English</button></div></div>
+ <div><p style="margin:0 0 8px">${T('wSize')}</p><div class="chips">${T('sizes').map((s,i)=>`<button class="chip" data-set="size:${i}" aria-pressed="${st.size===i}" style="font-size:${[15,18,21][i]}px">${s}</button>`).join('')}</div></div>
+ <button class="btn" data-act="start">${T('start')}</button><p class="center" style="margin:0;opacity:.75;font-size:.8em">${T('wNafath')}</p></div>`,
+home:()=>{const q=st.q.trim().toLowerCase();const list=TOOLS.filter(t=>!q||t.ar.includes(q)||t.en.toLowerCase().includes(q));
+ const kitTools=st.kit?KITS.find(k=>k.id===st.kit).tools:null;
+ return top(T('hi'),T('sub'))+`<main>
+ <label class="search">${ICON.search}<input id="q" type="search" placeholder="${T('search')}" value="${st.q.replace(/"/g,'&quot;')}" aria-label="${T('search')}"></label>
+ ${!q?`<h3>${T('task')}</h3><div class="kits">${KITS.map(k=>`<button class="kit" data-kit="${k.id}" aria-pressed="${st.kit===k.id}" style="${st.kit===k.id?'outline:2px solid var(--green)':''}">${ICON[k.ic]}<span><b>${nm(k)}</b><br><small>${k.tools.map(i=>nm(tool(i))).join(' + ')}</small></span></button>`).join('')}</div>
+ ${st.season?`<h3></h3><div class="banner"><span><b>${T('season')}</b><p>${T('seasonP')}</p></span><button class="btn small" style="background:#fff;color:var(--deep)" data-tool="washer">${T('book')}</button></div>`:''}`:''}
+ <h3>${kitTools?nm(KITS.find(k=>k.id===st.kit)):T('all')}</h3>
+ <div class="tools">${(kitTools?kitTools.map(tool):list).map(toolRow).join('')||`<p class="empty">—</p>`}</div>
+ <h3>${T('reqTitle')}</h3><div class="card"><p style="margin:0 0 10px;color:var(--soft);font-size:.9em">${T('reqP')}</p><button class="btn alt" data-go="req">${T('reqBtn')}</button></div>
+ <p class="sample">${T('sample')}</p></main>`+tabs()},
+tool:()=>{const t=tool(st.tool||'drill');return top(nm(t),T('locker'),'home')+`<main>
+ <div class="hero">${ICON[t.ic]}</div>
+ <div class="facts"><div><b>${num(t.day)} ${T('sar')}</b><small>${T('perDay')}</small></div><div><b>${num(t.kg)} ${T('kg')}</b><small>${T('weight')}</small></div><div><b style="font-size:.85em;white-space:normal">${T('lv')[t.lvl-1]}</b><small>${T('levelL')}</small></div></div>
+ <p style="font-size:.9em;margin:12px 0 0"><span class="tag ${t.free?'ok':'no'}">${t.free?T('avail'):T('none')}</span> · ${t.dep?T('deposit')+' '+num(t.dep)+' '+T('sar'):T('noDep')}</p>
+ <h3>${T('how')}</h3><div class="card"><ol class="steps">${t[st.lang==='ar'?'tipsAr':'tipsEn'].map(x=>`<li>${x}</li>`).join('')}</ol><button class="btn alt small" style="margin-top:8px;width:100%">▶ ${T('video')}</button></div>
+ ${t.kg>=6?`<div class="note" style="margin-top:12px">${T('heavy')}</div>`:''}
+ <p style="font-size:.85em;color:var(--soft)">${T('where')}</p>
+ ${t.free?`<button class="btn" data-go="book">${T('book')}</button>`:`<button class="btn alt" data-act="notify">${T('notify')}</button>`}</main>`+tabs()},
+book:()=>{const t=tool(st.tool||'drill'),dd=st.dur+1,rent=t.day*dd,del=st.deliv?10:0,tot=rent+del+t.dep;
+ const ok=st.agree&&(st.who===0||st.fam.trim());
+ return top(T('bookT'),nm(t),'tool')+`<main>
+ <h3 style="margin-top:4px">${T('when')}</h3><div class="chips">${[T('today'),T('tomorrow'),T('after')].map((x,i)=>`<button class="chip" data-set="day:${i}" aria-pressed="${st.day===i}">${x}</button>`).join('')}</div>
+ <h3>${T('days')}</h3><div class="chips">${T('d').map((x,i)=>`<button class="chip" data-set="dur:${i}" aria-pressed="${st.dur===i}">${x}</button>`).join('')}</div>
+ <h3>${T('who')}</h3><div class="chips"><button class="chip" data-set="who:0" aria-pressed="${st.who===0}">${T('me')}</button><button class="chip" data-set="who:1" aria-pressed="${st.who===1}">${T('fam')}</button></div>
+ ${st.who===1?`<div class="field" style="margin-top:12px"><label for="fam">${T('famName')}</label><input id="fam" value="${st.fam.replace(/"/g,'&quot;')}" placeholder="${T('famPh')}"><small style="color:var(--soft)">${T('famNote')}</small></div>`:''}
+ <label class="check"><input type="checkbox" data-tog="deliv" ${st.deliv?'checked':''}><span>${T('deliv')}</span></label>
+ <div class="card sum"><div><span>${T('rent')} (${T('d')[st.dur]})</span><b>${num(rent)} ${T('sar')}</b></div>${del?`<div><span>${T('delivL')}</span><b>${num(del)} ${T('sar')}</b></div>`:''}${t.dep?`<div><span>${T('dep2')}</span><b>${num(t.dep)} ${T('sar')}</b></div>`:''}<div class="tot"><span>${T('total')}</span><span>${num(tot)} ${T('sar')}</span></div><small style="color:var(--soft)">${T('pay')}</small></div>
+ <div class="note" style="margin-top:12px"><b>${T('termsT')}</b><ul style="margin:6px 0 0;padding-inline-start:18px">${T('terms').map(x=>`<li>${x}</li>`).join('')}</ul></div>
+ <label class="check"><input type="checkbox" data-tog="agree" ${st.agree?'checked':''}><span>${T('agree')}</span></label>
+ <button class="btn" data-act="confirm" ${ok?'':'disabled'}>${T('confirm')}</button></main>`},
+done:()=>{const b=st.bookings[0];const t=tool(b.tool);return top(T('doneT'),nm(t))+`<main class="center">
+ <p style="margin:0 0 12px;color:var(--soft)">${T('doneP')}</p>${qr(b.pin)}
+ <div class="pin" aria-label="PIN ${b.pin}">${[...b.pin].map(x=>`<span>${x}</span>`).join('')}</div>
+ <div class="locker"><span class="pill">${T('locker')}</span><span class="pill">${T('door')} ${b.door}</span></div>
+ <p style="font-size:.9em">${T('due')}: <b>${fmt(b.due)}</b></p>
+ <button class="btn alt" data-act="copy">${T('shareCode')}</button>
+ <p style="font-size:.82em;color:var(--soft)">${T('remind')}</p>
+ <button class="btn" data-go="mine">${T('goMine')}</button></main>`+tabs()},
+mine:()=>{const act=st.bookings.filter(b=>!b.done);return top(T('mineT'))+`<main>
+ <h3 style="margin-top:4px">${T('active')}</h3>
+ ${act.length?act.map(b=>{const t=tool(b.tool),h=Math.max(0,Math.round((b.due-Date.now())/3600e3)),pc=Math.min(100,Math.max(4,100-h/72*100));
+ return `<div class="card" style="margin-bottom:10px"><div style="display:flex;gap:12px;align-items:center"><span class="ic" style="width:48px;height:48px;border-radius:12px;background:var(--mint);display:grid;place-items:center;color:var(--green)">${ICON[t.ic]}</span><div style="flex:1"><b>${nm(t)}</b><br><small style="color:var(--soft)">${T('door')} ${b.door} · PIN ${b.pin}</small></div><b style="white-space:nowrap">${num(h)} ${T('hours')} ${T('left')}</b></div>
+ <div class="meter"><i style="width:${pc}%"></i></div><small style="color:var(--soft)">${T('due')}: ${fmt(b.due)}</small>
+ <div class="two" style="margin-top:12px"><button class="btn alt small" data-ext="${b.id}">${T('ext')}</button><button class="btn small" data-ret="${b.id}">${T('ret')}</button></div></div>`}).join(''):`<p class="empty">${T('noneYet')}</p>`}
+ <h3>${T('past')}</h3><div class="card">${st.history.map(h=>`<div class="row2"><span>${nm(tool(h.tool))}</span><span class="tag ok">${T('returned')}</span></div>`).join('')}</div></main>`+tabs()},
+return:()=>{const b=st.bookings.find(x=>x.id===st.ret)||st.bookings[0];const t=tool(b.tool);const ok=st.photo&&st.checks.every(Boolean);
+ return top(T('retT'),nm(t)+' · '+T('door')+' '+b.door,'mine')+`<main>
+ <h3 style="margin-top:4px">${T('ret1')}</h3><label class="photo">${st.photo?`<img src="${st.photo}" alt="">`:`<span>📷<br>${T('ret1p')}</span>`}<input type="file" accept="image/*" capture="environment" id="ph" aria-label="${T('ret1p')}"></label>
+ <h3>${T('ret2')}</h3><div class="card" style="padding-block:4px">${T('chk').map((x,i)=>`<label class="check"><input type="checkbox" data-chk="${i}" ${st.checks[i]?'checked':''}><span>${x}</span></label>`).join('')}</div>
+ <div class="card" style="margin-top:12px"><b>${T('prob')}</b><p style="margin:4px 0 10px;font-size:.88em;color:var(--soft)">${T('probP')}</p>${st.probSent?`<p class="tag ok" style="font-size:.85em">${T('probDone')}</p>`:`<button class="btn alt small" data-act="prob">${T('probBtn')}</button>`}</div>
+ <h3>${T('ret3')}</h3><div class="locker" style="justify-content:flex-start"><span class="pill">${T('locker')}</span><span class="pill">${T('door')} ${b.door}</span></div>
+ <button class="btn" style="margin-top:16px" data-act="returned" ${ok||st.probSent&&st.photo?'':'disabled'}>${T('retBtn')}</button></main>`},
+thanks:()=>top(T('thanks'))+`<main class="center"><div class="hero" style="margin-bottom:14px"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="24" cy="24" r="18"/><path d="m16 24 6 6 11-12"/></svg></div>
+ <p class="pill" style="display:inline-block;font-size:1.1em">${T('pts')}</p><p>${T('saveP')} <b>${num(st.lastSave)} ${T('sar')}</b></p><button class="btn" data-go="home">${T('tHome')}</button></main>`+tabs(),
+help:()=>top(T('helpT'))+`<main><div class="card"><b>${T('call')}</b><p style="margin:4px 0 0;color:var(--soft)">${T('wa')}</p></div>
+ <h3>${T('vids')}</h3><div class="tools">${T('vlist').map(v=>`<button class="tool" style="grid-template-columns:44px minmax(0,1fr)"><span class="ic" style="width:44px;height:44px">▶</span><b>${v}</b></button>`).join('')}</div>
+ <h3>${T('faq')}</h3>${T('q').map(x=>`<details><summary>${x[0]}</summary><p>${x[1]}</p></details>`).join('')}</main>`+tabs(),
+me:()=>{const saved=st.history.reduce((a,h)=>a+h.save,0);return top(T('meT'))+`<main>
+ <h3 style="margin-top:4px">${T('impact')}</h3><div class="two"><div class="stat"><b>${num(saved)} ${T('sar')}</b><small>${T('saved')}</small></div><div class="stat"><b>${num(st.history.length)}</b><small>${T('notBought')}</small></div></div>
+ <div class="stat" style="margin-top:10px"><small>${T('points')}</small><b>${num(st.points)} / ${num(30)}</b><div class="meter"><i style="width:${Math.min(100,st.points/30*100)}%"></i></div><small>${T('ptsP')}</small></div>
+ <h3>${T('access')}</h3><div class="card">
+ <div style="padding:6px 0 10px"><span>${T('size')}</span><div class="chips" style="margin-top:8px">${T('sizes').map((s,i)=>`<button class="chip" data-set="size:${i}" aria-pressed="${st.size===i}">${s}</button>`).join('')}</div></div>
+ ${sw('hc',T('hc'))}${sw('calm',T('calm'))}
+ <div class="row2"><span>${T('langL')}</span><div class="chips"><button class="chip" data-set="lang:ar" aria-pressed="${st.lang==='ar'}">العربية</button><button class="chip" data-set="lang:en" aria-pressed="${st.lang==='en'}">English</button></div></div></div>
+ <h3>${T('familyT')}</h3><div class="card">${st.family.map(f=>`<div class="row2"><span>${f}</span><span class="tag ok">✓</span></div>`).join('')}<button class="btn alt small" style="width:100%;margin-top:8px" data-go="book">${T('addFam')}</button></div>
+ <h3></h3><div class="card">${sw('notif',T('notif'))}${sw('season',T('season2'))}</div></main>`+tabs()},
+req:()=>top(T('reqT'),'','home')+`<main><form id="rf"><div class="field"><label for="rn">${T('reqName')}</label><input id="rn" placeholder="${T('reqPh')}"></div><button class="btn">${T('send')}</button></form>
+ <h3>${T('votes')}</h3><div class="card">${st.req.map((r,i)=>`<div class="row2"><span><b>${r[st.lang]}</b><br><small style="color:var(--soft)">${num(r.v+(st.voted[i]?1:0))}</small></span><button class="chip" data-vote="${i}" aria-pressed="${!!st.voted[i]}">${st.voted[i]?T('voted'):T('vote')}</button></div>`).join('')}</div></main>`+tabs()};
+
+function sw(k,l){return `<div class="row2"><span id="l-${k}">${l}</span><button class="switch" role="switch" aria-labelledby="l-${k}" aria-checked="${!!st[k]}" data-sw="${k}"></button></div>`}
+function fmt(ts){return new Date(ts).toLocaleString(st.lang==='ar'?'ar-SA':'en-GB',{weekday:'long',hour:'numeric',minute:'2-digit'})}
+function qr(seed){let s=+seed,c='';const n=21,u=7;const R=()=>(s=(s*9301+49297)%233280)/233280;
+ const fin=(x,y)=>`<rect x="${x*u}" y="${y*u}" width="${7*u}" height="${7*u}" fill="#0E4B3B"/><rect x="${x*u+u}" y="${y*u+u}" width="${5*u}" height="${5*u}" fill="#fff"/><rect x="${x*u+2*u}" y="${y*u+2*u}" width="${3*u}" height="${3*u}" fill="#0E4B3B"/>`;
+ for(let y=0;y<n;y++)for(let x=0;x<n;x++){const f=(x<8&&y<8)||(x>12&&y<8)||(x<8&&y>12);if(!f&&R()>.52)c+=`<rect x="${x*u}" y="${y*u}" width="${u}" height="${u}" fill="#0E4B3B"/>`}
+ return `<div class="qr"><svg viewBox="0 0 ${n*u} ${n*u}" role="img" aria-label="QR">${c}${fin(0,0)}${fin(14,0)}${fin(0,14)}</svg></div>`}
+let tt;function toast(m){let e=app.querySelector('.toast');if(!e){e=document.createElement('div');e.className='toast';app.appendChild(e)}e.textContent=m;e.classList.add('on');clearTimeout(tt);tt=setTimeout(()=>e.classList.remove('on'),2200)}
+
+function apply(){const r=document.documentElement;r.lang=st.lang;r.dir=st.lang==='ar'?'rtl':'ltr';r.classList.toggle('big',st.size===1);r.classList.toggle('huge',st.size===2);r.classList.toggle('hc',st.hc);r.classList.toggle('calm',st.calm)}
+function render(focus){apply();app.innerHTML=(V[st.view]||V.home)();drawIndex();
+ if(focus){const e=document.getElementById(focus);if(e){e.focus();const v=e.value;e.value='';e.value=v}}
+ try{if(location.hash.slice(1)!==st.view)history.replaceState(null,'','#'+st.view)}catch(e){}}
+function go(v){st.view=v;if(v==='book'&&!st.tool)st.tool='drill';render();const m=app.querySelector('main');if(m)m.scrollTop=0}
+
+document.addEventListener('click',e=>{const b=e.target.closest('button,[data-tool]');if(!b)return;const d=b.dataset;
+ if(d.go){if(d.go==='return'){st.ret=st.bookings[0].id;st.photo=null;st.checks=[0,0,0];st.probSent=false}if(d.go==='done'&&!st.bookings.length)return;go(d.go)}
+ else if(d.tool){st.tool=d.tool;go('tool')}
+ else if(d.kit){st.kit=st.kit===d.kit?null:d.kit;render()}
+ else if(d.set){const[k,v]=d.set.split(':');st[k]=k==='lang'?v:+v;if(k==='lang'||k==='size')save();render(st.who===1&&k!=='who'?null:null)}
+ else if(d.sw){st[d.sw]=!st[d.sw];save();render()}
+ else if(d.ret){st.ret=d.ret;st.photo=null;st.checks=[0,0,0];st.probSent=false;go('return')}
+ else if(d.ext){const x=st.bookings.find(y=>y.id===d.ext);x.due+=24*3600e3;render();toast('✓ '+T('ext'))}
+ else if(d.vote){st.voted[d.vote]=!st.voted[d.vote];render()}
+ else if(d.act){const a=d.act;
+  if(a==='lang'){st.lang=st.lang==='ar'?'en':'ar';save();render()}
+  if(a==='start'){st.seen=true;save();go('home')}
+  if(a==='notify'){toast('✓ '+T('notify'))}
+  if(a==='confirm'){const t=tool(st.tool);const pin=String(1000+Math.floor(Math.random()*9000));
+   st.bookings.unshift({id:'b'+Date.now(),tool:t.id,door:'B0'+(2+Math.floor(Math.random()*7)),pin,due:Date.now()+((st.day*24)+(st.dur+1)*24)*3600e3,done:false});
+   t.free=Math.max(0,t.free-1);st.agree=false;if(st.who===1&&st.fam.trim()&&!st.family.includes(st.fam.trim()))st.family.push(st.fam.trim());go('done')}
+  if(a==='copy'){const p=st.bookings[0].pin;const m=`${nm(tool(st.bookings[0].tool))} · ${T('locker')} · ${T('door')} ${st.bookings[0].door} · PIN ${p}`;
+   try{navigator.clipboard.writeText(m).then(()=>toast(T('copied')),()=>toast(m))}catch(err){toast(m)}}
+  if(a==='prob'){st.probSent=true;render()}
+  if(a==='returned'){const b=st.bookings.find(x=>x.id===st.ret)||st.bookings[0];b.done=true;const t=tool(b.tool);t.free++;
+   const s=({drill:440,ladder:360,washer:470,level:40,glue:60,vac:350,mower:600,tile:250}[t.id]||200)-t.day;st.lastSave=s;st.history.unshift({tool:t.id,save:s});st.points+=10;
+   st.bookings=st.bookings.filter(x=>!x.done);go('thanks')}
+ }});
+document.addEventListener('change',e=>{const d=e.target.dataset;
+ if(d.tog){st[d.tog]=e.target.checked;render()}
+ if(d.chk){st.checks[+d.chk]=e.target.checked?1:0;render()}
+ if(e.target.id==='ph'&&e.target.files[0]){const r=new FileReader();r.onload=()=>{st.photo=r.result;render()};r.readAsDataURL(e.target.files[0])}});
+document.addEventListener('input',e=>{if(e.target.id==='q'){st.q=e.target.value;render('q')}if(e.target.id==='fam'){st.fam=e.target.value;const b=app.querySelector('[data-act=confirm]');if(b)b.disabled=!(st.agree&&st.fam.trim())}});
+document.addEventListener('submit',e=>{e.preventDefault();const i=document.getElementById('rn');if(i&&i.value.trim()){st.req.unshift({ar:i.value.trim(),en:i.value.trim(),v:0});st.voted[0]=true;const nv={};Object.keys(st.voted).forEach(k=>nv[+k+1]=st.voted[k]);nv[0]=true;st.voted=nv;render();toast(T('reqDone'))}});
+window.addEventListener('hashchange',()=>{const h=location.hash.slice(1);if(V[h]&&h!==st.view){if(h==='done'&&!st.bookings.length)return;st.view=h;render()}});
+const h0=location.hash.slice(1);if(V[h0]&&h0!=='thanks')st.view=h0;
+render();
+if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}}
+}
+</script>
+</body>
+</html>
