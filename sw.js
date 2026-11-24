@@ -1,5 +1,5 @@
-// Offline cache for Oddah PWA
-const CACHE = 'oddah-v1';
+// Oddah PWA: network first, cache as offline fallback (so updates show up right away)
+const CACHE = 'oddah-v2';
 const FILES = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)));
@@ -10,5 +10,12 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 self.addEventListener('fetch', e => {
-  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
+  if (e.request.method !== 'GET') return;
+  e.respondWith(
+    fetch(e.request).then(r => {
+      const copy = r.clone();
+      caches.open(CACHE).then(c => c.put(e.request, copy)).catch(() => {});
+      return r;
+    }).catch(() => caches.match(e.request).then(r => r || caches.match('./index.html')))
+  );
 });

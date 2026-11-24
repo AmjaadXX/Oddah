@@ -115,6 +115,7 @@ summary{font-weight:600;cursor:pointer;min-height:28px}details p{margin:8px 0 0;
 .welcome .chip[aria-pressed=true]{background:#fff;color:var(--deep)}
 .welcome .btn{background:#fff;color:var(--deep)}
 .sample{font-size:.7em;color:var(--soft);text-align:center;margin-top:16px}
+.inst{border-radius:18px;padding:14px 16px;margin-bottom:14px}.inst p{margin:4px 0 10px;font-size:.85em;opacity:.85}.inst ol{margin:8px 0 12px;padding-inline-start:22px;font-size:.9em}.inst li{margin-bottom:6px}.inst small{opacity:.75}
 .empty{color:var(--soft);text-align:center;padding:24px 10px}
 @media(prefers-reduced-motion:reduce){*{transition:none!important}}
 :root.calm *{transition:none!important}
@@ -199,7 +200,9 @@ meT:'حسابي',impact:'أثرك',saved:'وفّرت',notBought:'أدوات ما
 access:'سهولة الاستخدام',size:'حجم الخط',sizes:['عادي','كبير','كبير جداً'],hc:'تباين عالي',calm:'تقليل الحركة',langL:'اللغة',familyT:'أفراد مسموح لهم الاستلام',addFam:'إضافة شخص',notif:'تذكير قبل موعد الإرجاع',season2:'تنبيهات المواسم (العيد، الصيف)',
 reqT:'اطلب أداة',reqName:'وش الأداة؟',reqPh:'مثلاً: خلاط إسمنت',send:'أرسل الطلب',votes:'الأكثر طلباً من جيرانك',vote:'أبيها',voted:'صوّتت',reqDone:'وصل طلبك',
 welcome:'أدواتك وقت حاجتك',wP:'استعر أدوات البيت من خزانة في حيّك، بدل ما تشتريها وتخزّنها.',wLang:'اختر اللغة',wSize:'اختر حجم الخط المريح لك',start:'ابدأ',wNafath:'الدخول برقم الجوال (رمز تحقق)',
-sample:'نموذج أولي، والأسعار والبيانات للتوضيح فقط'},
+sample:'نموذج أولي، والأسعار والبيانات للتوضيح فقط',
+instT:'ثبّت عُدّة على شاشتك الرئيسية',instP:'يفتح مثل التطبيق، بدون متجر تطبيقات',instBtn:'ثبّت التطبيق',later:'لاحقاً',
+iosT:'ثبّت عُدّة على الآيفون في خطوتين',ios1:'اضغط زر المشاركة',ios1b:'في أسفل Safari',ios2:'اختر «إضافة إلى الشاشة الرئيسية»',ios2b:'ثم اضغط «إضافة»',iosSafari:'افتح الرابط في Safari لتقدر تثبّته',ok:'تمام'},
 en:{
 hi:'Good evening, Um Khalid',sub:'Khuzam locker, Building 3 · open 24h',search:'Search tools… e.g. drill, ladder',task:'What are you doing today?',kitNote:'Full kit with guide',
 all:'All tools',avail:'Available',none:'Not available now',notify:'Notify me',perDay:'SAR / day',sar:'SAR',
@@ -224,7 +227,9 @@ meT:'Account',impact:'Your impact',saved:'Saved',notBought:'Tools not bought',po
 access:'Accessibility',size:'Text size',sizes:['Normal','Large','Extra large'],hc:'High contrast',calm:'Reduce motion',langL:'Language',familyT:'People allowed to pick up',addFam:'Add a person',notif:'Reminder before return time',season2:'Seasonal tips (Eid, summer)',
 reqT:'Request a tool',reqName:'Which tool?',reqPh:'e.g. Cement mixer',send:'Send request',votes:'Most requested by neighbours',vote:'I want it',voted:'Voted',reqDone:'Request sent',
 welcome:'Your tools, when you need them',wP:'Borrow household tools from a locker in your neighbourhood instead of buying and storing them.',wLang:'Choose language',wSize:'Pick a comfortable text size',start:'Start',wNafath:'Sign in with your mobile number (OTP)',
-sample:'Prototype. Prices and data are illustrative only'}};
+sample:'Prototype. Prices and data are illustrative only',
+instT:'Add Oddah to your home screen',instP:'Opens like an app, no app store needed',instBtn:'Install app',later:'Later',
+iosT:'Install Oddah on iPhone in 2 steps',ios1:'Tap the Share button',ios1b:'at the bottom of Safari',ios2:'Choose “Add to Home Screen”',ios2b:'then tap “Add”',iosSafari:'Open this link in Safari to install it',ok:'Got it'}};
 
 let st={view:'welcome',lang:'ar',size:0,hc:false,calm:false,tool:null,kit:null,q:'',day:0,dur:0,who:0,fam:'',deliv:false,agree:false,
  bookings:[{id:'b0',tool:'ladder',door:'A07',pin:'5129',due:Date.now()+30*3600e3,done:false}],history:[{tool:'glue',save:115},{tool:'drill',save:425}],
@@ -258,15 +263,29 @@ const tabs=()=>{const a=[['home','home',T('tHome')],['mine','box',T('tMine')],['
  return `<nav class="tabs">${a.map(x=>`<button data-go="${x[0]}" aria-current="${cur===x[0]}">${ICON[x[1]]}${x[2]}</button>`).join('')}</nav>`};
 const toolRow=t=>`<button class="tool" data-tool="${t.id}"><span class="ic">${ICON[t.ic]}</span><span><b>${nm(t)}</b><span class="tag ${t.free?'ok':'no'}">${t.free?T('avail')+' · '+num(t.free):T('none')}</span></span><span class="price">${num(t.day)} <small>${T('perDay')}</small></span></button>`;
 
+let deferredPrompt=null,instHidden=false;
+const isStandalone=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
+const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const isIOSSafari=isIOS&&!/crios|fxios|edgios|instagram|fban|fbav|snapchat|line\//i.test(navigator.userAgent);
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;render()});
+window.addEventListener('appinstalled',()=>{deferredPrompt=null;instHidden=true;render()});
+const share='<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-5px"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
+function installCard(dark){
+ if(isStandalone()||instHidden)return '';
+ const st2=dark?'background:#ffffff14;border:1px solid #ffffff40;color:#fff':'background:var(--paper);border:1.5px solid var(--green)';
+ if(deferredPrompt)return `<div class="inst" style="${st2}"><b>${T('instT')}</b><p>${T('instP')}</p><div class="two"><button class="btn small" data-act="install" style="${dark?'background:#fff;color:var(--deep)':''}">${T('instBtn')}</button><button class="btn alt small" data-act="instLater">${T('later')}</button></div></div>`;
+ if(isIOS)return `<div class="inst" style="${st2}"><b>${T('iosT')}</b>${isIOSSafari?`<ol><li>${T('ios1')} ${share} <small>${T('ios1b')}</small></li><li>${T('ios2')} <small>${T('ios2b')}</small></li></ol>`:`<p>${T('iosSafari')}</p>`}<button class="btn alt small" data-act="instLater" style="width:100%">${T('ok')}</button></div>`;
+ return '';
+}
 const V={
 welcome:()=>`<div class="welcome"><div><h1>عُدّة</h1><p style="margin:4px 0 0;opacity:.8">Oddah</p></div>
  <div><b style="font-size:1.3em">${T('welcome')}</b><p style="opacity:.85;margin:6px 0 0">${T('wP')}</p></div>
  <div><p style="margin:0 0 8px">${T('wLang')}</p><div class="chips"><button class="chip" data-set="lang:ar" aria-pressed="${st.lang==='ar'}">العربية</button><button class="chip" data-set="lang:en" aria-pressed="${st.lang==='en'}">English</button></div></div>
  <div><p style="margin:0 0 8px">${T('wSize')}</p><div class="chips">${T('sizes').map((s,i)=>`<button class="chip" data-set="size:${i}" aria-pressed="${st.size===i}" style="font-size:${[15,18,21][i]}px">${s}</button>`).join('')}</div></div>
- <button class="btn" data-act="start">${T('start')}</button><p class="center" style="margin:0;opacity:.75;font-size:.8em">${T('wNafath')}</p></div>`,
+ ${installCard(true)}<button class="btn" data-act="start">${T('start')}</button><p class="center" style="margin:0;opacity:.75;font-size:.8em">${T('wNafath')}</p></div>`,
 home:()=>{const q=st.q.trim().toLowerCase();const list=TOOLS.filter(t=>!q||t.ar.includes(q)||t.en.toLowerCase().includes(q));
  const kitTools=st.kit?KITS.find(k=>k.id===st.kit).tools:null;
- return top(T('hi'),T('sub'))+`<main>
+ return top(T('hi'),T('sub'))+`<main>${installCard(false)}
  <label class="search">${ICON.search}<input id="q" type="search" placeholder="${T('search')}" value="${st.q.replace(/"/g,'&quot;')}" aria-label="${T('search')}"></label>
  ${!q?`<h3>${T('task')}</h3><div class="kits">${KITS.map(k=>`<button class="kit" data-kit="${k.id}" aria-pressed="${st.kit===k.id}" style="${st.kit===k.id?'outline:2px solid var(--green)':''}">${ICON[k.ic]}<span><b>${nm(k)}</b><br><small>${k.tools.map(i=>nm(tool(i))).join(' + ')}</small></span></button>`).join('')}</div>
  ${st.season?`<h3></h3><div class="banner"><span><b>${T('season')}</b><p>${T('seasonP')}</p></span><button class="btn small" style="background:#fff;color:var(--deep)" data-tool="washer">${T('book')}</button></div>`:''}`:''}
@@ -359,6 +378,8 @@ document.addEventListener('click',e=>{const b=e.target.closest('button,[data-too
  else if(d.act){const a=d.act;
   if(a==='lang'){st.lang=st.lang==='ar'?'en':'ar';save();render()}
   if(a==='start'){st.seen=true;save();go('home')}
+  if(a==='install'&&deferredPrompt){deferredPrompt.prompt();deferredPrompt.userChoice.finally(()=>{deferredPrompt=null;render()})}
+  if(a==='instLater'){instHidden=true;render()}
   if(a==='notify'){toast('✓ '+T('notify'))}
   if(a==='confirm'){const t=tool(st.tool);const pin=String(1000+Math.floor(Math.random()*9000));
    st.bookings.unshift({id:'b'+Date.now(),tool:t.id,door:'B0'+(2+Math.floor(Math.random()*7)),pin,due:Date.now()+((st.day*24)+(st.dur+1)*24)*3600e3,done:false});
